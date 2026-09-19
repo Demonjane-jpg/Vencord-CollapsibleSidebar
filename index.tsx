@@ -409,12 +409,6 @@ function expandEverything() {
     setSidebarState(false, false, false);
 }
 
-function chooseEverythingAction() {
-    if (serversCollapsed && messagesCollapsed && bottomPanelCollapsed)
-        expandEverything();
-    else
-        collapseEverything();
-}
 
 function toggleServers() {
     setSidebarState(!serversCollapsed, messagesCollapsed, bottomPanelCollapsed);
@@ -462,10 +456,18 @@ function SidebarControlsMenu({ onClose }: { onClose: () => void; }) {
             aria-label="Sidebar controls"
         >
             <Menu.MenuItem
-                id="collapsible-sidebar-everything"
-                label={serversCollapsed && messagesCollapsed && bottomPanelCollapsed ? "Expand Everything" : "Collapse Everything"}
+                id="collapsible-sidebar-collapse-everything"
+                label="Collapse Everything"
                 action={() => {
-                    chooseEverythingAction();
+                    collapseEverything();
+                    onClose();
+                }}
+            />
+            <Menu.MenuItem
+                id="collapsible-sidebar-expand-everything"
+                label="Expand Everything"
+                action={() => {
+                    expandEverything();
                     onClose();
                 }}
             />

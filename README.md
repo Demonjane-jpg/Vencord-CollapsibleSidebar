@@ -112,7 +112,8 @@ After placing the plugin in your `src/userplugins/collapsibleSidebar/` folder:
 4. Toggle the switch to **ON**. (Discord may prompt you to restart).
 5. Once enabled, look at Discord's top title bar: a new **sidebar toggle icon** will appear immediately to the right of Discord's back/forward navigation arrows.
 6. Click the icon to open the controls menu:
-   - **Collapse / Expand Everything**: Toggle all three regions simultaneously.
+   - **Collapse Everything**: Immediately collapses Servers, Messages, and Bottom Panel together.
+   - **Expand Everything**: Immediately expands Servers, Messages, and Bottom Panel together, regardless of their current individual states.
    - **Collapse / Expand Servers**: Toggle only the server rail.
    - **Collapse / Expand Messages**: Toggle only the channels/messages sidebar.
    - **Collapse / Expand Bottom Panel**: Toggle only the user account/voice panel.
