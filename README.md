@@ -12,11 +12,7 @@ When the Messages sidebar is collapsed, the Bottom Panel seamlessly transitions 
 
 ## 📸 Screenshots
 
-> *Screenshots will be added here soon!*
-
-| Normal Sidebar | Floating Bottom Panel | Controls Menu |
-|:---:|:---:|:---:|
-| ![Sidebar Overview](screenshots/overview.png) | ![Floating Panel](screenshots/floating_panel.png) | ![Controls Menu](screenshots/menu.png) |
+> *Screenshots coming soon!*
 
 ---
 
@@ -47,7 +43,10 @@ When the Messages sidebar is collapsed, the Bottom Panel seamlessly transitions 
 
 ## 📥 Installation Guide
 
-This plugin is designed for the custom source-build version of Vencord. Choose either **Method 1 (Git)** or **Method 2 (Manual Download)**.
+> [!IMPORTANT]
+> **Prerequisite**: Custom userplugins require a local Vencord source build. If you do not have a working local Vencord source installation yet, follow the [official Vencord building from source guide](https://github.com/Vendicated/Vencord#building-from-source) before installing this plugin.
+
+Choose either **Method 1 (Git)** or **Method 2 (Manual Download)** below.
 
 ### Method 1: Git Clone (Recommended)
 
