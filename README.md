@@ -1,138 +1,123 @@
-# Vencord CollapsibleSidebar
+# Vencord CollapsibleSidebar & Floating Chats
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Vencord Userplugin](https://img.shields.io/badge/Vencord-Userplugin-7289da.svg)](https://vencord.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6.svg)](https://www.typescriptlang.org/)
+[![Platform: Windows](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-brightgreen.svg)]()
 
-**CollapsibleSidebar** is a custom [Vencord](https://vencord.dev) userplugin that lets you independently collapse Discord's **Servers rail**, **Messages sidebar**, and **Bottom Panel** to maximize your horizontal screen and chat space.
-
-When the Messages sidebar is collapsed, the Bottom Panel seamlessly transitions into an adaptable, **draggable floating panel**—giving you uninterrupted access to your native Discord profile, microphone, headphones, settings, voice connections, camera, and screen-sharing controls.
-
----
-
-## 📸 Screenshots
-
-> *Screenshots coming soon!*
+**CollapsibleSidebar** is a powerful [Vencord](https://vencord.dev) userplugin that lets you collapse Discord's **Servers rail**, **Messages sidebar**, and **Bottom Panel** to maximize horizontal screen space, while introducing **independent desktop floating chat windows** with full multi-monitor dragging, global focus cycling (`Alt + C`), and complete rich messaging support.
 
 ---
 
 ## ✨ Features
 
-- **Independently Toggleable Regions**:
-  - **Servers**: Discord's vertical server icon rail.
-  - **Messages**: The entire channel/DM sidebar (Friends, Nitro, DMs, text & voice channels).
-  - **Bottom Panel**: Discord's user account panel, voice connection bar, and video/stream controls.
-  - All **8 state combinations** work independently without interfering with one another.
-- **True Chat Space Reclamation**:
-  - Collapsing the sidebars removes their grid columns entirely. Your chat, message composer, and call view expand to fill the reclaimed horizontal space.
-- **Draggable Floating Bottom Panel**:
-  - When the Messages sidebar is collapsed, the Bottom Panel automatically enters floating mode at its standard width (~240px) rather than being squished or hidden.
-  - A dedicated top grab handle allows you to smoothly reposition the panel anywhere on your screen.
-  - Interactive controls (mute, deafen, settings, disconnect, video) are completely isolated from dragging to prevent misclicks.
-- **Dynamic Voice & Video Sizing**:
-  - Equipped with a built-in `ResizeObserver` that automatically detects when voice connection status, RTC ping, camera previews, or screen-share controls appear.
-  - Anchored positioning ensures the panel expands upward naturally without clipping or extending beyond your screen.
-- **Window Boundary Clamping**:
-  - Resizing your Discord window automatically re-clamps the floating panel to ensure it never gets pushed off-screen.
-- **Full State & Position Persistence**:
-  - Your collapse preferences and custom floating panel coordinates are saved automatically via Vencord's DataStore and restored across Discord restarts.
-- **Instant Position Recovery**:
-  - Double-click the drag handle or select **Reset Floating Position** from the toolbar menu to immediately snap the panel back to its default bottom-left position.
+### 🪟 1. Independent Desktop Floating Chat Windows
+- **One-Click Pop-Out**: Pop out any text channel, voice text chat, group DM, or direct message into a standalone desktop window using the pop-out icon in the channel header.
+- **Drag Anywhere & Multi-Monitor**: Drag floating chat windows anywhere across your desktop setup, including secondary monitors and directly over full-screen games, web browsers, or code editors.
+- **Persistent Always-On-Top**: Windows use OS-level `screen-saver` tier and native Win32 `HWND_TOPMOST` elevation. They stay on top even when other programs are opened, closed, minimized, or restored, and immediately bring themselves forward when clicked.
+- **Multiple Simultaneous Chats**: Open and manage multiple floating chats at once with cascading layout positions and corner resize handles.
+- **In-Window File Attachments**: Attach files, pictures, and documents directly within the floating window using the native file picker (`+` button), complete with preview chips and direct Discord REST uploads without needing to switch to the main Discord window.
+- **Full Emoji, Sticker & GIF Pickers**:
+  - **Server Emojis**: Full server rail navigation with server icons, custom server emoji packs, and Discord Nitro favorites.
+  - **Stickers**: Server sticker picker with server navigation rail.
+  - **GIFs**: Integrated Tenor GIF search and sending.
+- **Discord Nitro Theme Integration**: Automatically extracts and applies custom Discord Nitro gradient themes, dark mode, light mode, and transparent backgrounds in real time.
 
 ---
 
-## 📥 Installation Guide
+### ⚡ 2. Seamless Global Focus Cycling (`Alt + C`)
+- **Bidirectional Keyboard Cycling**: Seamlessly cycle between your active external application (e.g. Bing search bar in Chrome/Edge, VS Code, PowerShell, Terminal, games) and your open floating Discord chats with a single keybind.
+- **Cycle Flow**:
+  1. Typing in your external app (e.g. Bing search bar) $\rightarrow$ press `Alt + C`.
+  2. Focus hops directly into the first open Discord floating chat composer.
+  3. Press `Alt + C` again to cycle through any other open floating chats.
+  4. On the final floating chat, pressing `Alt + C` returns focus directly back to your external app's typing field.
+- **Zero-Lag & Deadlock-Free**: Powered by non-blocking asynchronous process spawning and lightweight Win32 P/Invoke helpers.
+- **No Minimizing or Icon Locking**: Bypasses Windows Focus Stealing Prevention cleanly without simulating fake `Alt` keystrokes or triggering Alt+Tab task toggling.
+- **Configurable Shortcut**: Default is `Alt + C`, fully customizable in Vencord Plugin Settings.
+
+---
+
+### 📐 3. Collapsible Sidebar Regions
+- **Independently Toggleable Regions**:
+  - **Servers Rail**: Discord's vertical server icon list.
+  - **Messages Sidebar**: The channels/DM list (Friends, Nitro, DMs, text & voice channels).
+  - **Bottom Panel**: Discord's user account bar, voice status, and camera/streaming controls.
+  - All 8 state combinations work independently.
+- **True Screen Space Reclamation**: Collapsing sidebars completely removes their layout columns, expanding your chat and voice view to 100% of the reclaimed screen width.
+- **Draggable & Corner-Resizable Floating Bottom Panel**:
+  - When the Messages sidebar is closed, your user panel (avatar, mute, deafen, settings) automatically floats with a dedicated drag handle and corner resize handles.
+  - Dynamic `ResizeObserver` detects voice status, ping, camera preview, and screen share controls, expanding smoothly upward without clipping.
+  - State and custom positions persist across Discord restarts.
+
+---
+
+## 📂 Project Architecture
+
+```
+collapsibleSidebar/
+├── index.tsx          # Main plugin entry, sidebar toggles, context menus, and header buttons
+├── floatingChat.tsx   # Floating chat portal, composers, emoji/sticker/GIF pickers & attachments
+├── native.ts          # Electron main process hooks, global shortcut registry & window management
+├── focusHelper.cs     # Native Win32 C# source for deadlock-free foreground window switching
+├── focusHelper.exe    # Compiled high-performance Win32 helper binary
+├── settings.ts        # Plugin settings definitions (custom focus keybind, options)
+├── theme.ts           # Discord Nitro theme extraction and live background listener
+└── README.md          # Documentation & user guide
+```
+
+---
+
+## 📥 Installation & Setup
 
 > [!IMPORTANT]
-> **Prerequisite**: Custom userplugins require a local Vencord source build. If you do not have a working local Vencord source installation yet, follow the [official Vencord building from source guide](https://github.com/Vendicated/Vencord#building-from-source) before installing this plugin.
+> Custom userplugins require a local Vencord source build. If you don't have one set up yet, check out the [official Vencord building from source guide](https://github.com/Vendicated/Vencord#building-from-source).
 
-Choose either **Method 1 (Git)** or **Method 2 (Manual Download)** below.
+### Step 1: Clone into Vencord
+Clone this repository directly into your Vencord `src/userplugins/collapsibleSidebar` folder:
+```bash
+git clone https://github.com/Demonjane-jpg/Vencord-CollapsibleSidebar.git src/userplugins/collapsibleSidebar
+```
 
-### Method 1: Git Clone (Recommended)
+### Step 2: Compile the Native Focus Helper (Windows Only)
+On Windows, compile `focusHelper.cs` using the built-in Microsoft .NET Framework C# compiler:
+```powershell
+& "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /target:winexe /optimize+ /out:"src\userplugins\collapsibleSidebar\focusHelper.exe" "src\userplugins\collapsibleSidebar\focusHelper.cs"
+```
 
-1. Open your terminal or PowerShell and navigate to your local Vencord repository folder:
-   ```bash
-   cd path/to/Vencord
-   ```
-2. Clone this repository directly into your `src/userplugins/collapsibleSidebar` folder:
-   ```bash
-   git clone https://github.com/Demonjane-jpg/Vencord-CollapsibleSidebar.git src/userplugins/collapsibleSidebar
-   ```
-3. Build and inject Vencord (see [Building & Injecting](#-building--injecting) below).
-
----
-
-### Method 2: Manual Download
-
-1. Download the [`index.tsx`](https://raw.githubusercontent.com/Demonjane-jpg/Vencord-CollapsibleSidebar/main/index.tsx) file from this repository.
-2. In your Vencord directory, navigate to `src/userplugins/`.
-3. Create a folder named `collapsibleSidebar` if it does not already exist:
-   ```
-   Vencord/
-   └── src/
-       └── userplugins/
-           └── collapsibleSidebar/
-               └── index.tsx   <-- Place index.tsx here
-   ```
-4. Build and inject Vencord (see [Building & Injecting](#-building--injecting) below).
-
----
-
-## 🔨 Building & Injecting
-
-After placing the plugin in your `src/userplugins/collapsibleSidebar/` folder:
-
-### On Windows:
-
-1. Fully close Discord (check your system tray to ensure Discord is completely closed).
-2. In your Vencord folder, open PowerShell or Command Prompt and run:
-   ```powershell
-   pnpm.cmd build
-   pnpm.cmd inject
-   ```
-
-### On macOS / Linux:
-
-1. Fully close Discord.
-2. In your Vencord folder, open a terminal and run:
-   ```bash
-   pnpm build
-   pnpm inject
-   ```
-
+### Step 3: Build & Inject Vencord
+1. Completely close Discord.
+2. In your Vencord root directory, run:
+```powershell
+pnpm build
+pnpm inject
+```
 3. Launch Discord.
 
 ---
 
-## 🚀 How to Enable & Use
+## 🚀 How to Use
 
-1. In Discord, open **User Settings** (the gear icon next to your name).
-2. Scroll down the left sidebar to the **Vencord** section and click **Plugins**.
-3. In the search box, type **`CollapsibleSidebar`**.
-4. Toggle the switch to **ON**. (Discord may prompt you to restart).
-5. Once enabled, look at Discord's top title bar: a new **sidebar toggle icon** will appear immediately to the right of Discord's back/forward navigation arrows.
-6. Click the icon to open the controls menu:
-   - **Collapse Everything**: Immediately collapses Servers, Messages, and Bottom Panel together.
-   - **Expand Everything**: Immediately expands Servers, Messages, and Bottom Panel together, regardless of their current individual states.
-   - **Collapse / Expand Servers**: Toggle only the server rail.
-   - **Collapse / Expand Messages**: Toggle only the channels/messages sidebar.
-   - **Collapse / Expand Bottom Panel**: Toggle only the user account/voice panel.
-   - **Reset Floating Position**: Reset the floating panel back to its default bottom-left position.
+1. **Enable the Plugin**:
+   - In Discord, go to **User Settings** (gear icon) $\rightarrow$ **Vencord** $\rightarrow$ **Plugins**.
+   - Search for **`CollapsibleSidebar`** and toggle it **ON**.
+2. **Pop Out a Floating Chat**:
+   - In any channel or DM, click the **pop-out icon** in the top header (next to the search bar/pins).
+   - The chat window will immediately pop out into an independent, draggable desktop window.
+3. **Cycle with Keybind (`Alt + C`)**:
+   - Start typing in your browser, terminal, or any app.
+   - Press `Alt + C` to hop into your floating chat.
+   - Press `Alt + C` again to return directly to your external app's text bar.
+4. **Collapse Sidebars**:
+   - Click the **sidebar toggle icon** in Discord's top titlebar to open the menu.
+   - Toggle **Servers**, **Messages**, or **Bottom Panel** individually, or click **Close All** / **Open Everything**.
 
 ---
 
-## ❓ Troubleshooting
+## ⚙️ Configuration
 
-- **Plugin does not appear in Vencord Settings**:
-  - Verify that the file is located at `src/userplugins/collapsibleSidebar/index.tsx`.
-  - Ensure you ran `pnpm.cmd build` (or `pnpm build`) without compilation errors.
-- **Changes didn't take effect in Discord**:
-  - Make sure Discord was fully closed before running `pnpm.cmd inject` (or `pnpm inject`).
-  - Press `Ctrl + R` (or `Cmd + R` on macOS) inside Discord to reload the client.
-- **Floating panel moved off-screen**:
-  - Click the sidebar toggle button in the top navigation bar and select **Reset Floating Position**, or double-click the top drag handle.
-- **Accidental button clicks while moving the panel**:
-  - Dragging is exclusively enabled on the **top handle bar** (`••••` grip pill). Clicking your avatar, mute, deafen, or settings buttons will never initiate a drag.
+In Discord under **Settings $\rightarrow$ Plugins $\rightarrow$ CollapsibleSidebar**, you can configure:
+- **Focus Keybind**: Customize the global shortcut used to cycle between external applications and floating chat windows (default: `Alt + C`, or set to `None` to disable).
 
 ---
 
