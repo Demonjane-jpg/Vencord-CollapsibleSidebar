@@ -63,6 +63,8 @@ collapsibleSidebar/
 ├── focusHelper.exe    # Compiled high-performance Win32 helper binary
 ├── settings.ts        # Plugin settings definitions (custom focus keybind, options)
 ├── theme.ts           # Discord Nitro theme extraction and live background listener
+├── extra/
+│   └── linux/         # Optional modular helper scripts for Linux users (X11 & Wayland)
 └── README.md          # Documentation & user guide
 ```
 
@@ -79,10 +81,19 @@ Clone this repository directly into your Vencord `src/userplugins/collapsibleSid
 git clone https://github.com/Demonjane-jpg/Vencord-CollapsibleSidebar.git src/userplugins/collapsibleSidebar
 ```
 
-### Step 2: Compile the Native Focus Helper (Windows Only)
-On Windows, compile `focusHelper.cs` using the built-in Microsoft .NET Framework C# compiler:
+### Step 2: Native Focus Helper Setup
+
+#### On Windows (Default):
+Compile `focusHelper.cs` using the built-in Microsoft .NET Framework C# compiler:
 ```powershell
 & "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe" /target:winexe /optimize+ /out:"src\userplugins\collapsibleSidebar\focusHelper.exe" "src\userplugins\collapsibleSidebar\focusHelper.cs"
+```
+
+#### On Linux (Optional Addon):
+If you are on Linux and want external app focus cycling (`Alt + C`), check out the [Linux Addon Guide](extra/linux/README.md) or run:
+```bash
+chmod +x src/userplugins/collapsibleSidebar/extra/linux/install.sh
+./src/userplugins/collapsibleSidebar/extra/linux/install.sh
 ```
 
 ### Step 3: Build & Inject Vencord

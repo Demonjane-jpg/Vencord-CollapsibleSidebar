@@ -11,20 +11,38 @@ import path from "path";
 
 function logNative(msg: string) {
     try {
-        const p = path.join(process.env.TEMP || "", "vc_focus_native.log");
+        const p = path.join(process.env.TEMP || process.env.TMPDIR || "/tmp", "vc_focus_native.log");
         fs.appendFileSync(p, new Date().toISOString() + " " + msg + "\n");
     } catch {}
 }
 
-function getFocusHelperPath(): string | null {
-    const candidates = [
-        path.join(process.env.TEMP || "", "vc_focusHelper.exe"),
-        path.join(__dirname, "focusHelper.exe"),
-        path.join(__dirname, "..", "src", "userplugins", "collapsibleSidebar", "focusHelper.exe"),
-        path.join(__dirname, "userplugins", "collapsibleSidebar", "focusHelper.exe")
-    ];
-    for (const p of candidates) {
-        if (fs.existsSync(p)) return p;
+interface FocusHelperTarget {
+    command: string;
+    argsPrefix: string[];
+}
+
+function getFocusHelperTarget(): FocusHelperTarget | null {
+    if (process.platform === "win32") {
+        const candidates = [
+            path.join(process.env.TEMP || "", "vc_focusHelper.exe"),
+            path.join(__dirname, "focusHelper.exe"),
+            path.join(__dirname, "..", "src", "userplugins", "collapsibleSidebar", "focusHelper.exe"),
+            path.join(__dirname, "userplugins", "collapsibleSidebar", "focusHelper.exe")
+        ];
+        for (const p of candidates) {
+            if (fs.existsSync(p)) return { command: p, argsPrefix: [] };
+        }
+    } else if (process.platform === "linux") {
+        const candidates = [
+            path.join(process.env.HOME || "", ".local", "bin", "vc_focusHelper.sh"),
+            path.join(__dirname, "focusHelper.sh"),
+            path.join(__dirname, "..", "src", "userplugins", "collapsibleSidebar", "focusHelper.sh"),
+            path.join(__dirname, "..", "src", "userplugins", "collapsibleSidebar", "extra", "linux", "focusHelper.sh"),
+            path.join(__dirname, "extra", "linux", "focusHelper.sh")
+        ];
+        for (const p of candidates) {
+            if (fs.existsSync(p)) return { command: "bash", argsPrefix: [p] };
+        }
     }
     return null;
 }
@@ -34,13 +52,15 @@ function makeChatTopmost(win: BrowserWindow) {
     try {
         win.setAlwaysOnTop(true, "screen-saver");
         win.moveTop();
-        const handleBuf = win.getNativeWindowHandle();
-        const hwndStr = process.arch === "x64" ? handleBuf.readBigInt64LE().toString() : handleBuf.readInt32LE().toString();
-        const helper = getFocusHelperPath();
-        if (helper) {
-            // Asynchronous non-blocking invocation prevents UI stutter
-            const child = spawn(helper, ["topmost", hwndStr], { detached: true, stdio: "ignore" });
-            child.unref();
+        if (process.platform === "win32") {
+            const handleBuf = win.getNativeWindowHandle();
+            const hwndStr = process.arch === "x64" ? handleBuf.readBigInt64LE().toString() : handleBuf.readInt32LE().toString();
+            const helper = getFocusHelperTarget();
+            if (helper) {
+                // Asynchronous non-blocking invocation prevents UI stutter
+                const child = spawn(helper.command, [...helper.argsPrefix, "topmost", hwndStr], { detached: true, stdio: "ignore" });
+                child.unref();
+            }
         }
     } catch {}
 }
@@ -103,19 +123,19 @@ let lastRendererSender: IpcMainInvokeEvent["sender"] | null = null;
 let originWasExternal = false;
 
 function saveForegroundWindow() {
-    const helper = getFocusHelperPath();
+    const helper = getFocusHelperTarget();
     if (helper) {
         try {
-            spawnSync(helper, ["save", process.pid.toString()], { stdio: "ignore", timeout: 200 });
+            spawnSync(helper.command, [...helper.argsPrefix, "save", process.pid.toString()], { stdio: "ignore", timeout: 200 });
         } catch {}
     }
 }
 
 function restoreForegroundWindow(): boolean {
-    const helper = getFocusHelperPath();
+    const helper = getFocusHelperTarget();
     if (helper) {
         try {
-            const child = spawn(helper, ["restore"], { detached: true, stdio: "ignore" });
+            const child = spawn(helper.command, [...helper.argsPrefix, "restore"], { detached: true, stdio: "ignore" });
             child.unref();
             logNative("restoreForegroundWindow: spawned detached restore");
             return true;
@@ -166,11 +186,12 @@ function getMainWebContents() {
 }
 
 function focusNativeHwnd(hwndStr: string) {
-    const helper = getFocusHelperPath();
+    if (process.platform !== "win32") return;
+    const helper = getFocusHelperTarget();
     if (helper) {
         try {
             // Asynchronous non-blocking invocation prevents UI stutter
-            const child = spawn(helper, ["focus", hwndStr], { detached: true, stdio: "ignore" });
+            const child = spawn(helper.command, [...helper.argsPrefix, "focus", hwndStr], { detached: true, stdio: "ignore" });
             child.unref();
         } catch {}
     }
